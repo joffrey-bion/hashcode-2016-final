@@ -39,9 +39,11 @@ public class Satellite {
     public boolean canTakePictureOf(Location location, int currentTurn) {
         int[] distanceFromPosition = Coord.distance(location.coords, position);
         if (distanceFromPosition[LATITUDE] > maxOrientationValue) {
+            //log(currentTurn, "location too far in latitude for this satellite");
             return false;
         }
         if (distanceFromPosition[LONGITUDE] > maxOrientationValue) {
+            //log(currentTurn, "location too far in longitude for this satellite");
             return false;
         }
 
@@ -51,12 +53,18 @@ public class Satellite {
         currentGroundTarget[LONGITUDE] = position[LONGITUDE] + orientation[LONGITUDE];
         int[] distanceFromTarget = Coord.distance(location.coords, currentGroundTarget);
         if (distanceFromTarget[LATITUDE] > maxOrientationChangePerTurn * turnsPassedSinceLastPic) {
+            log(currentTurn, "cannot rotate fast enough to get to this latitude");
             return false;
         }
         if (distanceFromTarget[LONGITUDE] > maxOrientationChangePerTurn * turnsPassedSinceLastPic) {
+            log(currentTurn, "cannot rotate fast enough to get to this longitude");
             return false;
         }
 
         return false;
+    }
+
+    private void log(int turn, String msg) {
+        System.out.println(String.format("Turn %d\t%s", turn, msg));
     }
 }
