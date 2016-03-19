@@ -44,7 +44,7 @@ public class Coord {
         return velocityInversion;
     }
 
-    private static int normalizeLongitude(int longitude) {
+    public static int normalizeLongitude(int longitude) {
         int adjustedLongitude = longitude + LONGITUDE_WRAP_VALUE;
         int modulo = Math.floorMod(adjustedLongitude, 2 * LONGITUDE_WRAP_VALUE);
         return modulo - LONGITUDE_WRAP_VALUE;

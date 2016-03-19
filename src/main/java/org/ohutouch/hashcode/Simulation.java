@@ -2,7 +2,12 @@ package org.ohutouch.hashcode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class Simulation {
 
@@ -18,6 +23,8 @@ public class Simulation {
 
     public final Satellite[] satellites;
 
+    public final List<Picture> picturesTaken = new ArrayList<>();
+
     public Simulation(String filename, int nTurns, int nSatellites, int nImages) {
         this.filename = filename;
         this.nTurns = nTurns;
@@ -26,14 +33,13 @@ public class Simulation {
     }
 
     public List<Picture> run() {
-        List<Picture> picturesTaken = new ArrayList<>();
-        int turnsToSimulate = Math.min(nTurns, 10000); // FIXME remove this max number of simulated turns
-        for (int turn = 0; turn < turnsToSimulate; turn++) {
+        picturesTaken.clear();
+        int turnsToSimulate = Math.min(nTurns, 2000); // max number of simulated turns for faster runs
+        for (int turn = 0; turn < nTurns; turn++) {
             System.out.println("Simulating turn " + turn + "\tfor file " + filename);
-            picturesTaken.addAll(takePictures(turn));
+            takePictures(turn);
             moveSatellites();
         }
-
         return picturesTaken;
     }
 
@@ -41,47 +47,52 @@ public class Simulation {
         Arrays.stream(satellites).forEach(Satellite::move);
     }
 
-    private List<Picture> takePictures(int turn) {
-        List<Picture> picturesTaken = new ArrayList<>();
+    private void takePictures(int turn) {
+        TreeMap<Integer, Location> locationsByLongitude = new TreeMap<>();
+        Arrays.stream(collections)
+                .filter(col -> col.canBeShotAt(turn))
+                .flatMap(col -> Arrays.stream(col.locations))
+                .forEach(loc -> locationsByLongitude.put(loc.getLongitude(), loc));
+//        log(turn, locationsByLongitude.size() + " sorted locations");
         for (int sat = 0; sat < satellites.length; sat++) {
-            Picture pic = takeBestPicture(turn, sat);
-            if (pic != null) {
-                picturesTaken.add(pic);
-            }
+            takeBestPicture(turn, sat, locationsByLongitude);
         }
-        return picturesTaken;
     }
 
-    private Picture takeBestPicture(int turn, int sat) {
+    private void takeBestPicture(int turn, int sat, TreeMap<Integer, Location> locationsByLongitude) {
         Satellite satellite = satellites[sat];
-        List<Location> locationsInRange = findTakeableLocations(turn, satellite);
+        List<Location> locationsInRange = findTakeableLocations(turn, satellite, locationsByLongitude);
         if (!locationsInRange.isEmpty()) {
             Location location = pickLocation(locationsInRange, satellite);
             location.pictureTaken = true;
             satellite.turnOfLastPictureTaken = turn;
             satellite.orientTo(location.coords);
-            return new Picture(location.coords, turn, sat);
+            picturesTaken.add(new Picture(location.coords, turn, sat));
+            log(turn, "picture taken by " + sat + " at " + Arrays.toString(location.coords));
+        } else {
+//            log(turn, "no location in range for satellite " + sat);
         }
-        return null;
     }
 
-    private List<Location> findTakeableLocations(int turn, Satellite satellite) {
+    private List<Location> findTakeableLocations(int turn, Satellite satellite,
+            TreeMap<Integer, Location> locationsByLongitude) {
         List<Location> locationsInRange = new ArrayList<>();
-        for (ImageCollection collection : collections) {
-            if (!collection.canBeShotAt(turn)) {
-                //log(turn, "cannot shot the given collection at the current turn");
+        int minLongitude = satellite.getMinAcceptableLongitude();
+        int maxLongitude = satellite.getMaxAcceptableLongitude();
+        Map<Integer, Location> acceptableLocations = locationsByLongitude.subMap(minLongitude, true, maxLongitude,
+                true);
+//        log(turn, acceptableLocations.size() + " acceptable locations");
+
+        for (Location location : acceptableLocations.values()) {
+            if (location.pictureTaken) {
+//                log(turn, "picture already taken for this location");
                 continue;
             }
-            for (Location location : collection.locations) {
-                if (location.pictureTaken) {
-                    log(turn, "picture already taken for this location");
-                    continue;
-                }
-                if (satellite.canTakePictureOf(location, turn)) {
-                    locationsInRange.add(location);
-                }
+            if (satellite.canTakePictureOf(location, turn)) {
+                locationsInRange.add(location);
             }
         }
+
         return locationsInRange;
     }
 

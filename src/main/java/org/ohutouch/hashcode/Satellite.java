@@ -48,23 +48,37 @@ public class Satellite {
         }
 
         int turnsPassedSinceLastPic = currentTurn - turnOfLastPictureTaken;
+        int maxOrientationChange = maxOrientationChangePerTurn * turnsPassedSinceLastPic;
         int[] currentGroundTarget = new int[2];
         currentGroundTarget[LATITUDE] = position[LATITUDE] + orientation[LATITUDE];
         currentGroundTarget[LONGITUDE] = position[LONGITUDE] + orientation[LONGITUDE];
         int[] distanceFromTarget = Coord.distance(location.coords, currentGroundTarget);
-        if (distanceFromTarget[LATITUDE] > maxOrientationChangePerTurn * turnsPassedSinceLastPic) {
-            log(currentTurn, "cannot rotate fast enough to get to this latitude");
+        if (distanceFromTarget[LATITUDE] > maxOrientationChange) {
+//            log(currentTurn, "cannot rotate fast enough to get to this latitude (dist=" + distanceFromTarget[LATITUDE] +
+//                    " max=" + maxOrientationChange);
             return false;
         }
         if (distanceFromTarget[LONGITUDE] > maxOrientationChangePerTurn * turnsPassedSinceLastPic) {
-            log(currentTurn, "cannot rotate fast enough to get to this longitude");
+//            log(currentTurn,
+//                    "cannot rotate fast enough to get to this longitude (dist=" + distanceFromTarget[LONGITUDE] +
+//                            " max=" + maxOrientationChange);
             return false;
         }
 
-        return false;
+        return true;
     }
 
     private void log(int turn, String msg) {
         System.out.println(String.format("Turn %d\t%s", turn, msg));
+    }
+
+    public int getMinAcceptableLongitude() {
+        // NOT normalized because this is a rough minimum
+        return position[LONGITUDE] - maxOrientationValue;
+    }
+
+    public int getMaxAcceptableLongitude() {
+        // NOT normalized because this is a rough maximum
+        return position[LONGITUDE] + maxOrientationValue;
     }
 }
