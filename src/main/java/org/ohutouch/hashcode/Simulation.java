@@ -22,11 +22,11 @@ public class Simulation {
         this.satellites = new Satellite[nSatellites];
     }
 
-    public List<Picture> run() {
+    public List<Picture> run(String filename) {
         List<Picture> picturesTaken = new ArrayList<>();
 
         for (int turn = 0; turn < nTurns; turn++) {
-            System.out.println("Simulating turn " + turn);
+            System.out.println("Simulating turn " + turn + " for file " + filename);
             picturesTaken.addAll(takePictures(turn));
             moveSatellites();
         }
@@ -51,23 +51,24 @@ public class Simulation {
 
     private Picture takeBestPicture(int turn, int sat) {
         Satellite satellite = satellites[sat];
-        List<int[]> locationsInRange = findTakeableLocations(turn, satellite);
+        List<Location> locationsInRange = findTakeableLocations(turn, satellite);
         if (!locationsInRange.isEmpty()) {
-            int[] location = pickLocation(locationsInRange, satellite);
-            satellite.orientTo(location);
-            return new Picture(location, turn, sat);
+            Location location = pickLocation(locationsInRange, satellite);
+            satellite.orientTo(location.coords);
+            location.pictureTaken = true;
+            return new Picture(location.coords, turn, sat);
         }
         return null;
     }
 
-    private List<int[]> findTakeableLocations(int turn, Satellite satellite) {
-        List<int[]> locationsInRange = new ArrayList<>();
-        for (ImageCollection col : collections) {
-            if (!col.canBeShotAt(turn)) {
+    private List<Location> findTakeableLocations(int turn, Satellite satellite) {
+        List<Location> locationsInRange = new ArrayList<>();
+        for (ImageCollection collection : collections) {
+            if (!collection.canBeShotAt(turn)) {
                 continue;
             }
-            for (int[] location : col.locations) {
-                if (satellite.canTakePictureOf(location)) {
+            for (Location location : collection.locations) {
+                if (!location.pictureTaken && satellite.canTakePictureOf(location)) {
                     locationsInRange.add(location);
                 }
             }
@@ -75,9 +76,9 @@ public class Simulation {
         return locationsInRange;
     }
 
-    private int[] pickLocation(List<int[]> locations, Satellite satellite) {
+    private Location pickLocation(List<Location> locations, Satellite satellite) {
 
-        // TODO refine the choice
+        // TODO refine the choice of picture among the takeable ones
 
         return locations.get(0);
     }

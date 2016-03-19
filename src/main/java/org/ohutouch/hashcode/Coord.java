@@ -1,7 +1,5 @@
 package org.ohutouch.hashcode;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import static org.ohutouch.hashcode.Simulation.*;
 
 public class Coord {
@@ -65,7 +63,7 @@ public class Coord {
         diff[LATITUDE] = pos1[LATITUDE] - pos2[LATITUDE];
         diff[LONGITUDE] = pos1[LONGITUDE] - pos2[LONGITUDE];
 
-        //System.err.println("naive distance still there");
+        // TODO implement distance wrapping
 
         return diff;
     }

@@ -4,13 +4,18 @@ public class ImageCollection {
 
     public int value;
 
-    public int[][] locations;
+    public Location[] locations;
+
+    /**
+     * pictureTaken[i] is true if location[i] has been taken
+     */
+    public boolean[] pictureTaken;
 
     public int[][] ranges;
 
     public ImageCollection(int value, int nLocations, int nRanges) {
         this.value = value;
-        this.locations = new int[nLocations][2];
+        this.locations = new Location[nLocations];
         this.ranges = new int[nRanges][2];
     }
 

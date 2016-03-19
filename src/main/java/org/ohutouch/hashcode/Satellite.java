@@ -34,8 +34,8 @@ public class Satellite {
         orientation = Coord.difference(newTarget, position);
     }
 
-    public boolean canTakePictureOf(int[] location) {
-        int[] distanceFromPosition = Coord.distance(location, position);
+    public boolean canTakePictureOf(Location location) {
+        int[] distanceFromPosition = Coord.distance(location.coords, position);
         if (distanceFromPosition[LATITUDE] > maxOrientationValue) {
             return false;
         }
@@ -46,7 +46,7 @@ public class Satellite {
         int[] currentGroundTarget = new int[2];
         currentGroundTarget[LATITUDE] = position[LATITUDE] + orientation[LATITUDE];
         currentGroundTarget[LONGITUDE] = position[LONGITUDE] + orientation[LONGITUDE];
-        int[] distanceFromTarget = Coord.distance(location, currentGroundTarget);
+        int[] distanceFromTarget = Coord.distance(location.coords, currentGroundTarget);
         if (distanceFromTarget[LATITUDE] > maxOrientationChangePerTurn) {
             return false;
         }

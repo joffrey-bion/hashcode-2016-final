@@ -19,7 +19,7 @@ public class Main {
         for (String inputFilename : args) {
             try {
                 List<String> inputLines = Files.readAllLines(Paths.get(inputFilename));
-                List<String> outputLines = run(inputLines);
+                List<String> outputLines = run(inputFilename, inputLines);
                 String outputFilename = inputFilename.replaceAll("in", "out");
                 writeOutput(outputFilename, outputLines);
             } catch (IOException e) {
@@ -29,9 +29,9 @@ public class Main {
         }
     }
 
-    private static List<String> run(List<String> inputLines) {
+    private static List<String> run(String filename, List<String> inputLines) {
         Simulation simulation = InputReader.read(inputLines);
-        List<Picture> picturesTaken = simulation.run();
+        List<Picture> picturesTaken = simulation.run(filename);
         return picturesTaken.stream().map(Picture::toOutputLine).collect(Collectors.toList());
     }
 
