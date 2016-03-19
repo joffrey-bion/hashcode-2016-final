@@ -1,0 +1,34 @@
+group 'org.ohutouch'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //testCompile 'junit:junit:4.11'
+}
+
+mainClassName = 'org.ohutouch.hashcode.Main'
+
+task srcZip(type: Zip, dependsOn: tasks.build) {
+    classifier = 'src'
+    from sourceSets*.allSource
+}
+
+task generateOutputs(type: JavaExec, dependsOn: tasks.build) {
+    args ("inputs/*")
+    description = "Hashcode output generation"
+    main = project.mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task submit << {
+    println "Files ready to be submitted"
+}
+tasks.submit.dependsOn (tasks.srcZip, tasks.generateOutputs)
