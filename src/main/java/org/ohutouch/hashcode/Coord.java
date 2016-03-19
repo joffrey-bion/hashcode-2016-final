@@ -10,6 +10,8 @@ public class Coord {
 
     public static final int MIN_LONGITUDE = -648000;
 
+    private static final int LONGITUDE_WRAP_VALUE = 648000;
+
     /**
      * Modifies the given position
      *
@@ -22,7 +24,7 @@ public class Coord {
      */
     public static boolean move(int[] position, int latitudeOffset, int longitudeOffset) {
         int newLatitude = position[LATITUDE] + latitudeOffset;
-        int newLongitude = position[LONGITUDE] + longitudeOffset;
+        int newLongitude = normalizeLongitude(position[LONGITUDE] + longitudeOffset);
         boolean velocityInversion = false;
 
         if (newLatitude > MAX_LATITUDE) {
@@ -40,6 +42,12 @@ public class Coord {
         position[LATITUDE] = newLatitude;
         position[LONGITUDE] = newLongitude;
         return velocityInversion;
+    }
+
+    private static int normalizeLongitude(int longitude) {
+        int adjustedLongitude = longitude + LONGITUDE_WRAP_VALUE;
+        int modulo = Math.floorMod(adjustedLongitude, 2 * LONGITUDE_WRAP_VALUE);
+        return modulo - LONGITUDE_WRAP_VALUE;
     }
 
     public static int[] distance(int[] pos1, int[] pos2) {
@@ -61,9 +69,7 @@ public class Coord {
         int[] diff = new int[2];
 
         diff[LATITUDE] = pos1[LATITUDE] - pos2[LATITUDE];
-        diff[LONGITUDE] = pos1[LONGITUDE] - pos2[LONGITUDE];
-
-        // TODO implement distance wrapping
+        diff[LONGITUDE] = normalizeLongitude(pos1[LONGITUDE] - pos2[LONGITUDE]);
 
         return diff;
     }
