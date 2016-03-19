@@ -1,15 +1,12 @@
 package org.ohutouch.hashcode;
 
+import java.util.Arrays;
+
 public class ImageCollection {
 
     public int value;
 
     public Location[] locations;
-
-    /**
-     * pictureTaken[i] is true if location[i] has been taken
-     */
-    public boolean[] pictureTaken;
 
     public int[][] ranges;
 
@@ -26,5 +23,9 @@ public class ImageCollection {
             }
         }
         return false;
+    }
+
+    public long numberOfPicturesLeftToTake() {
+        return Arrays.stream(locations).filter(loc -> loc.pictureTaken).count();
     }
 }

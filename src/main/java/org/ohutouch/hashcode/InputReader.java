@@ -35,7 +35,8 @@ public class InputReader {
                     String[] locationLine = lines.get(collectionLineNum + 1 + loc).split(" ");
                     int latitude = Integer.parseInt(locationLine[0]);
                     int longitude = Integer.parseInt(locationLine[1]);
-                    simulation.collections[col].locations[loc] = new Location(latitude, longitude);
+                    simulation.collections[col].locations[loc] = new Location(simulation.collections[col], latitude,
+                            longitude);
                 }
 
                 for (int rg = 0; rg < nRanges; rg++) {

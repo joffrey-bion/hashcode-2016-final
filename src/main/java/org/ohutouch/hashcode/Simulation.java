@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Simulation {
@@ -36,7 +37,9 @@ public class Simulation {
         picturesTaken.clear();
         int turnsToSimulate = Math.min(nTurns, 2000); // max number of simulated turns for faster runs
         for (int turn = 0; turn < nTurns; turn++) {
-            System.out.println("Simulating turn " + turn + "\tfor file " + filename);
+            if (turn % 10000 == 0) {
+                System.out.println("Simulating turn " + turn + "\tfor file " + filename);
+            }
             takePictures(turn);
             moveSatellites();
         }
@@ -53,7 +56,7 @@ public class Simulation {
                 .filter(col -> col.canBeShotAt(turn))
                 .flatMap(col -> Arrays.stream(col.locations))
                 .forEach(loc -> locationsByLongitude.put(loc.getLongitude(), loc));
-//        log(turn, locationsByLongitude.size() + " sorted locations");
+        //        log(turn, locationsByLongitude.size() + " sorted locations");
         for (int sat = 0; sat < satellites.length; sat++) {
             takeBestPicture(turn, sat, locationsByLongitude);
         }
@@ -70,7 +73,7 @@ public class Simulation {
             picturesTaken.add(new Picture(location.coords, turn, sat));
             log(turn, "picture taken by " + sat + " at " + Arrays.toString(location.coords));
         } else {
-//            log(turn, "no location in range for satellite " + sat);
+            //            log(turn, "no location in range for satellite " + sat);
         }
     }
 
@@ -81,11 +84,11 @@ public class Simulation {
         int maxLongitude = satellite.getMaxAcceptableLongitude();
         Map<Integer, Location> acceptableLocations = locationsByLongitude.subMap(minLongitude, true, maxLongitude,
                 true);
-//        log(turn, acceptableLocations.size() + " acceptable locations");
+        //        log(turn, acceptableLocations.size() + " acceptable locations");
 
         for (Location location : acceptableLocations.values()) {
             if (location.pictureTaken) {
-//                log(turn, "picture already taken for this location");
+                //                log(turn, "picture already taken for this location");
                 continue;
             }
             if (satellite.canTakePictureOf(location, turn)) {
@@ -100,7 +103,10 @@ public class Simulation {
 
         // TODO refine the choice of picture among the takeable ones
 
-        return locations.get(0);
+        Function<Location, Long> collectionFullness = loc ->
+                loc.parentCollection.numberOfPicturesLeftToTake() * 1000000 / loc.parentCollection.value;
+        Comparator<Location> comparator = Comparator.comparing(collectionFullness);
+        return locations.stream().sorted(comparator).findFirst().orElse(null);
     }
 
     private void log(int turn, String msg) {
