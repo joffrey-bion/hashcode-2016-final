@@ -8,7 +8,7 @@ public class InputReader {
     private static final int N_SATELLITES_LINE = 1;
     private static final int FIRST_SAT_LINE = 2;
 
-    public static Simulation read(List<String> lines) {
+    public static Simulation read(String filename, List<String> lines) {
         try {
             int nTurns = Integer.parseInt(lines.get(N_TURNS_LINE));
             int nSatellites = Integer.parseInt(lines.get(N_SATELLITES_LINE));
@@ -17,7 +17,7 @@ public class InputReader {
             int nImageCollections = Integer.parseInt(lines.get(IMAGE_COUNT_LINE));
             final int FIRST_IMG_COLLECTION_LINE = IMAGE_COUNT_LINE + 1;
 
-            Simulation simulation = new Simulation(nTurns, nSatellites, nImageCollections);
+            Simulation simulation = new Simulation(filename, nTurns, nSatellites, nImageCollections);
 
             for (int s = 0; s < nSatellites; s++) {
                 simulation.satellites[s] = parseSatellite(lines.get(FIRST_SAT_LINE + s).split(" "));

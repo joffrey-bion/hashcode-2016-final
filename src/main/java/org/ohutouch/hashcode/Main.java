@@ -30,8 +30,8 @@ public class Main {
     }
 
     private static List<String> run(String filename, List<String> inputLines) {
-        Simulation simulation = InputReader.read(inputLines);
-        List<Picture> picturesTaken = simulation.run(filename);
+        Simulation simulation = InputReader.read(filename, inputLines);
+        List<Picture> picturesTaken = simulation.run();
         return picturesTaken.stream().map(Picture::toOutputLine).collect(Collectors.toList());
     }
 

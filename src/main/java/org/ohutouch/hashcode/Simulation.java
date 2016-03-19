@@ -6,6 +6,8 @@ import java.util.List;
 
 public class Simulation {
 
+    private final String filename;
+
     public static final int LATITUDE = 0;
 
     public static final int LONGITUDE = 1;
@@ -16,17 +18,18 @@ public class Simulation {
 
     public final Satellite[] satellites;
 
-    public Simulation(int nTurns, int nSatellites, int nImages) {
+    public Simulation(String filename, int nTurns, int nSatellites, int nImages) {
+        this.filename = filename;
         this.nTurns = nTurns;
         this.collections = new ImageCollection[nImages];
         this.satellites = new Satellite[nSatellites];
     }
 
-    public List<Picture> run(String filename) {
+    public List<Picture> run() {
         List<Picture> picturesTaken = new ArrayList<>();
-
-        for (int turn = 0; turn < nTurns; turn++) {
-            System.out.println("Simulating turn " + turn + " for file " + filename);
+        int turnsToSimulate = Math.min(nTurns, 10000); // FIXME remove this max number of simulated turns
+        for (int turn = 0; turn < turnsToSimulate; turn++) {
+            System.out.println("Simulating turn " + turn + "\tfor file " + filename);
             picturesTaken.addAll(takePictures(turn));
             moveSatellites();
         }
@@ -54,8 +57,9 @@ public class Simulation {
         List<Location> locationsInRange = findTakeableLocations(turn, satellite);
         if (!locationsInRange.isEmpty()) {
             Location location = pickLocation(locationsInRange, satellite);
-            satellite.orientTo(location.coords);
             location.pictureTaken = true;
+            satellite.turnOfLastPictureTaken = turn;
+            satellite.orientTo(location.coords);
             return new Picture(location.coords, turn, sat);
         }
         return null;
@@ -65,10 +69,15 @@ public class Simulation {
         List<Location> locationsInRange = new ArrayList<>();
         for (ImageCollection collection : collections) {
             if (!collection.canBeShotAt(turn)) {
+                //log(turn, "cannot shot the given collection at the current turn");
                 continue;
             }
             for (Location location : collection.locations) {
-                if (!location.pictureTaken && satellite.canTakePictureOf(location)) {
+                if (location.pictureTaken) {
+                    log(turn, "picture already taken for this location");
+                    continue;
+                }
+                if (satellite.canTakePictureOf(location, turn)) {
                     locationsInRange.add(location);
                 }
             }
@@ -81,5 +90,9 @@ public class Simulation {
         // TODO refine the choice of picture among the takeable ones
 
         return locations.get(0);
+    }
+
+    private void log(int turn, String msg) {
+        System.out.println(String.format("File %s\tturn %d\t%s", filename, turn, msg));
     }
 }
