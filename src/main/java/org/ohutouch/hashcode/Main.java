@@ -20,6 +20,8 @@ public class Main {
             try {
                 List<String> inputLines = Files.readAllLines(Paths.get(inputFilename));
                 List<String> outputLines = run(inputFilename, inputLines);
+                outputLines.add(0, outputLines.size() + "");
+                // replaces the folder inputs and the extension .in in one step, yay!
                 String outputFilename = inputFilename.replaceAll("in", "out");
                 writeOutput(outputFilename, outputLines);
             } catch (IOException e) {
