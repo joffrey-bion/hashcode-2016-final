@@ -14,7 +14,4 @@ public class Location {
         this.coords[Simulation.LONGITUDE] = longitude;
     }
 
-    public int getLongitude() {
-        return coords[Simulation.LONGITUDE];
-    }
 }

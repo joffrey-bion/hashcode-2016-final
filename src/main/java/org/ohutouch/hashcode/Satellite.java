@@ -25,9 +25,9 @@ public class Satellite {
         this.maxOrientationValue = maxOrientationValue;
     }
 
-    public void move() {
-        boolean invertVelocity = Coord.move(position, latitudeVelocity, -15);
-        if (invertVelocity) {
+    public void moveOneStep() {
+        boolean crossedPole = Coord.move(position, latitudeVelocity, -15);
+        if (crossedPole) {
             latitudeVelocity = -latitudeVelocity;
         }
     }
@@ -54,22 +54,13 @@ public class Satellite {
         currentGroundTarget[LONGITUDE] = position[LONGITUDE] + orientation[LONGITUDE];
         int[] distanceFromTarget = Coord.distance(location.coords, currentGroundTarget);
         if (distanceFromTarget[LATITUDE] > maxOrientationChange) {
-//            log(currentTurn, "cannot rotate fast enough to get to this latitude (dist=" + distanceFromTarget[LATITUDE] +
-//                    " max=" + maxOrientationChange);
             return false;
         }
-        if (distanceFromTarget[LONGITUDE] > maxOrientationChangePerTurn * turnsPassedSinceLastPic) {
-//            log(currentTurn,
-//                    "cannot rotate fast enough to get to this longitude (dist=" + distanceFromTarget[LONGITUDE] +
-//                            " max=" + maxOrientationChange);
+        if (distanceFromTarget[LONGITUDE] > maxOrientationChange) {
             return false;
         }
 
         return true;
-    }
-
-    private void log(int turn, String msg) {
-        System.out.println(String.format("Turn %d\t%s", turn, msg));
     }
 
     public int getMinAcceptableLongitude() {

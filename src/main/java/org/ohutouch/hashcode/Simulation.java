@@ -2,28 +2,44 @@ package org.ohutouch.hashcode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class Simulation {
 
     private final String filename;
 
+    /**
+     * Index of the latitude in an array of coordinates.
+     */
     public static final int LATITUDE = 0;
 
+    /**
+     * Index of the longitude in an array of coordinates.
+     */
     public static final int LONGITUDE = 1;
 
+    /**
+     * Total number of turns (seconds) in the simulation.
+     */
     public final int nTurns;
 
+    /**
+     * Collections of images to shoot.
+     */
     public final ImageCollection[] collections;
 
+    /**
+     * The satellites to use to shoot the pictures.
+     */
     public final Satellite[] satellites;
 
+    /**
+     * The pictures taken since the beginning of the simulation.
+     */
     public final List<Picture> picturesTaken = new ArrayList<>();
 
     public Simulation(String filename, int nTurns, int nSatellites, int nImages) {
@@ -35,19 +51,20 @@ public class Simulation {
 
     public List<Picture> run() {
         picturesTaken.clear();
-        int turnsToSimulate = Math.min(nTurns, 2000); // max number of simulated turns for faster runs
         for (int turn = 0; turn < nTurns; turn++) {
             if (turn % 10000 == 0) {
                 System.out.println("Simulating turn " + turn + "\tfor file " + filename);
             }
             takePictures(turn);
-            moveSatellites();
+            moveSatellitesOneStep();
         }
         return picturesTaken;
     }
 
-    private void moveSatellites() {
-        Arrays.stream(satellites).forEach(Satellite::move);
+    private void moveSatellitesOneStep() {
+        for (Satellite satellite :satellites) {
+            satellite.moveOneStep();
+        }
     }
 
     private void takePictures(int turn) {
@@ -55,8 +72,7 @@ public class Simulation {
         Arrays.stream(collections)
                 .filter(col -> col.canBeShotAt(turn))
                 .flatMap(col -> Arrays.stream(col.locations))
-                .forEach(loc -> locationsByLongitude.put(loc.getLongitude(), loc));
-        //        log(turn, locationsByLongitude.size() + " sorted locations");
+                .forEach(loc -> locationsByLongitude.put(loc.coords[LONGITUDE], loc));
         for (int sat = 0; sat < satellites.length; sat++) {
             takeBestPicture(turn, sat, locationsByLongitude);
         }
@@ -72,8 +88,6 @@ public class Simulation {
             satellite.orientTo(location.coords);
             picturesTaken.add(new Picture(location.coords, turn, sat));
             log(turn, "picture taken by " + sat + " at " + Arrays.toString(location.coords));
-        } else {
-            //            log(turn, "no location in range for satellite " + sat);
         }
     }
 
@@ -84,11 +98,9 @@ public class Simulation {
         int maxLongitude = satellite.getMaxAcceptableLongitude();
         Map<Integer, Location> acceptableLocations = locationsByLongitude.subMap(minLongitude, true, maxLongitude,
                 true);
-        //        log(turn, acceptableLocations.size() + " acceptable locations");
 
         for (Location location : acceptableLocations.values()) {
             if (location.pictureTaken) {
-                //                log(turn, "picture already taken for this location");
                 continue;
             }
             if (satellite.canTakePictureOf(location, turn)) {

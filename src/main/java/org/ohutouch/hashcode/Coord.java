@@ -20,28 +20,28 @@ public class Coord {
      * @param latitudeOffset
      * @param longitudeOffset
      *
-     * @return true if velocity changed sign
+     * @return true if the position moved past a pole
      */
     public static boolean move(int[] position, int latitudeOffset, int longitudeOffset) {
         int newLatitude = position[LATITUDE] + latitudeOffset;
         int newLongitude = normalizeLongitude(position[LONGITUDE] + longitudeOffset);
-        boolean velocityInversion = false;
+        boolean crossedPole = false;
 
         if (newLatitude > MAX_LATITUDE) {
             newLatitude = 180 * 3600 - newLatitude;
             newLongitude = MIN_LONGITUDE + newLongitude;
-            velocityInversion = true;
+            crossedPole = true;
         }
 
         if (newLatitude < MIN_LATITUDE) {
             newLatitude = -180 * 3600 - newLatitude;
             newLongitude = MIN_LONGITUDE + newLongitude;
-            velocityInversion = true;
+            crossedPole = true;
         }
 
         position[LATITUDE] = newLatitude;
         position[LONGITUDE] = newLongitude;
-        return velocityInversion;
+        return crossedPole;
     }
 
     public static int normalizeLongitude(int longitude) {
